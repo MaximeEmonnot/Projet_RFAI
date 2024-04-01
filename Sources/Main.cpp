@@ -1,7 +1,5 @@
-#include <Windows.h>
-
-#include "../Includes/EngineException.h"
-#include "opencv2/opencv.hpp"
+#include <EngineException.h>
+#include <opencv2/opencv.hpp>
 
 int main()
 {
