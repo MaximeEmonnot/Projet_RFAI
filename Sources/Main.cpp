@@ -1,3 +1,6 @@
+#include <Windows.h>
+
+#include "../Includes/EngineException.h"
 #include "opencv2/opencv.hpp"
 
 int main()
@@ -11,9 +14,9 @@ int main()
 
 		cv::waitKey(0);
 	}
-	catch(std::exception const& e)
+	catch(EngineException const& e)
 	{
-		std::cout << e.what() << std::endl;
+		e.DisplayMessageBox();
 	}
 	return 0;
 }
