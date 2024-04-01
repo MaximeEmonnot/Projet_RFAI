@@ -1,4 +1,5 @@
 #pragma once
+#include <Windows.h>
 #include <exception>
 #include <string>
 
@@ -16,7 +17,7 @@ public:
 
     void DisplayMessageBox() const
 	{
-        MessageBox(nullptr, GetText().c_str(), GetTitle().c_str(), MB_ICONERROR | MB_OK);
+        MessageBox(nullptr, GetText().c_str(), GetCaption().c_str(), MB_ICONERROR | MB_OK);
     }
 
     std::wstring GetText() const
@@ -27,7 +28,7 @@ public:
     	     + L"\n[Description] : \n" + description;
     }
 
-    std::wstring GetTitle() const
+    std::wstring GetCaption() const
     {
         return title;
     }
