@@ -9,6 +9,18 @@ Image::Image(std::string const& path)
         throw EXCEPTION(L"OpenCV Project Exception", L"Image provided was empty !");
 }
 
+Image::Image(Image const& copy)
+{
+    *this = copy;
+}
+
+Image& Image::operator=(Image const& copy)
+{
+    image = copy.image.clone();
+
+    return *this;
+}
+
 void Image::SetRGB(int x, int y, Color const& color)
 {
     image.at<cv::Vec3b>(x, y) = color.GetColor();
@@ -16,7 +28,7 @@ void Image::SetRGB(int x, int y, Color const& color)
 
 Color Image::GetRGB(int x, int y) const
 {
-    return Color(image.at<cv::Vec3b>(x, y));
+    return { image.at<cv::Vec3b>(x, y) };
 }
 
 void Image::WriteToFile(std::string const& path) const
@@ -26,12 +38,12 @@ void Image::WriteToFile(std::string const& path) const
 
 int Image::GetWidth() const
 {
-    return image.cols;
+    return image.rows;
 }
 
 int Image::GetHeight() const
 {
-    return image.rows;
+    return image.cols;
 }
 
 cv::Mat Image::GetImage() const

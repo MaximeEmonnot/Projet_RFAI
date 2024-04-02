@@ -28,6 +28,7 @@
     <ClInclude Include="Includes\Color.h" />
     <ClInclude Include="Includes\EngineException.h" />
     <ClInclude Include="Includes\Image.h" />
+    <ClInclude Include="Includes\Transformations.h" />
     <ClInclude Include="Includes\Window.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

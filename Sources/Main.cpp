@@ -2,6 +2,8 @@
 #include <Image.h>
 #include <Window.h>
 
+#include "Transformations.h"
+
 int main()
 {
 	try
@@ -9,9 +11,9 @@ int main()
 		Image  image("Assets/Test.jpg");
 		Window window("Display Window");
 
-		image.SetRGB(400, 400, { 255, 0, 0 });
+		Image grayscale = Transformations::ToGrayScale(image);
 
-		window.DisplayImage(image);
+		window.DisplayImage(grayscale);
 	}
 	catch(EngineException const& e)
 	{
