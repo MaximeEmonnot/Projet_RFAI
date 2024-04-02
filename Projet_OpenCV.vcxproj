@@ -19,11 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Sources\Color.cpp" />
     <ClCompile Include="Sources\Image.cpp" />
     <ClCompile Include="Sources\Main.cpp" />
     <ClCompile Include="Sources\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Includes\Color.h" />
     <ClInclude Include="Includes\EngineException.h" />
     <ClInclude Include="Includes\Image.h" />
     <ClInclude Include="Includes\Window.h" />

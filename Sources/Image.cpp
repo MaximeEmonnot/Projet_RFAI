@@ -9,13 +9,14 @@ Image::Image(std::string const& path)
         throw EXCEPTION(L"OpenCV Project Exception", L"Image provided was empty !");
 }
 
-void Image::SetRGB(int x, int y, bool color)
+void Image::SetRGB(int x, int y, Color const& color)
 {
+    image.at<cv::Vec3b>(x, y) = color.GetColor();
 }
 
-bool Image::GetRGB(int x, int y)
+Color Image::GetRGB(int x, int y) const
 {
-    return false;
+    return Color(image.at<cv::Vec3b>(x, y));
 }
 
 void Image::WriteToFile(std::string const& path) const
