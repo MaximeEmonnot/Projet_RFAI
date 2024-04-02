@@ -1,14 +1,15 @@
 #include <EngineException.h>
-#include <opencv2/opencv.hpp>
+
+#include <Image.h>
 
 int main()
 {
 	try
 	{
-		cv::Mat image = cv::imread("Assets/Test.jpg", cv::IMREAD_COLOR);
+		Image const image("Assets/Test.jpg");
 
 		cv::namedWindow("Display Window", cv::WINDOW_AUTOSIZE);
-		cv::imshow("Display Window", image);
+		cv::imshow("Display Window", image.GetImage());
 
 		cv::waitKey(0);
 	}
