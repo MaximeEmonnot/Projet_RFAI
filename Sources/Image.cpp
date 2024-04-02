@@ -23,11 +23,13 @@ Image& Image::operator=(Image const& copy)
 
 void Image::SetRGB(int x, int y, Color const& color)
 {
+    CheckCoordinates(x, y);
     image.at<cv::Vec3b>(x, y) = color.GetColor();
 }
 
 Color Image::GetRGB(int x, int y) const
 {
+    CheckCoordinates(x, y);
     return { image.at<cv::Vec3b>(x, y) };
 }
 
@@ -49,4 +51,12 @@ int Image::GetHeight() const
 cv::Mat Image::GetImage() const
 {
     return image;
+}
+
+void Image::CheckCoordinates(int x, int y) const
+{
+    if(x >= GetWidth())
+        throw EXCEPTION(L"OpenCV Project Exception", L"X Coordinate is out of bounds!");
+    if(y >= GetHeight())
+        throw EXCEPTION(L"OpenCV Project Exception", L"Y Coordinate is out of bounds!");
 }

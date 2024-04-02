@@ -22,6 +22,10 @@ public:
     int GetHeight() const;
 
     cv::Mat GetImage() const;
+
+protected:
+	void CheckCoordinates(int x, int y) const;
+
 private:
     cv::Mat image;
 };

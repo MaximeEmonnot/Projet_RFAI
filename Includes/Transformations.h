@@ -16,7 +16,7 @@ public:
         {
 	        for(int y = 0; y < image.GetHeight(); y++)
 	        {
-                Color const color = image.GetRGB(x, y);
+                Color   const color     = image.GetRGB(x, y);
                 uint8_t const grayValue = static_cast<uint8_t>(0.299 * color.GetRed()) + static_cast<uint8_t>(0.587 * color.GetGreen()) + static_cast<uint8_t>(0.114 * color.GetBlue());
                 output.SetRGB(x, y, { grayValue, grayValue, grayValue});
 	        }
