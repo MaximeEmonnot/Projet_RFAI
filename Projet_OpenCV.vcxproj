@@ -21,10 +21,12 @@
   <ItemGroup>
     <ClCompile Include="Sources\Image.cpp" />
     <ClCompile Include="Sources\Main.cpp" />
+    <ClCompile Include="Sources\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Includes\EngineException.h" />
     <ClInclude Include="Includes\Image.h" />
+    <ClInclude Include="Includes\Window.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

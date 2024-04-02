@@ -1,21 +1,20 @@
 #include <EngineException.h>
-
 #include <Image.h>
+#include <Window.h>
 
 int main()
 {
 	try
 	{
-		Image const image("Assets/Test.jpg");
+		Image  const image("Assets/Test.jpg");
+		Window const window("Display Window");
 
-		cv::namedWindow("Display Window", cv::WINDOW_AUTOSIZE);
-		cv::imshow("Display Window", image.GetImage());
-
-		cv::waitKey(0);
+		window.DisplayImage(image);
 	}
 	catch(EngineException const& e)
 	{
 		e.DisplayMessageBox();
 	}
+
 	return 0;
 }
