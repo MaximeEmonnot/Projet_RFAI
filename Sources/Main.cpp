@@ -40,8 +40,8 @@ int main()
 	// Commenter l'un ou l'autre
 	// Test : Tous les bouts de code qu'on souhaiterais tester à part, sans se poser de question concernant une bonne structure ou non
 	// Safe : Code bien structuré
-	Test();
-	// Safe();
+	// Test();
+	Safe();
 
 	return 0;
 }

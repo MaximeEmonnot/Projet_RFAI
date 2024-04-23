@@ -130,7 +130,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OPENCV)\install\x64\vc17\lib;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_core490d.lib;opencv_calib3d490d.lib;opencv_dnn490d.lib;opencv_features2d490d.lib;opencv_flann490d.lib;opencv_gapi490d.lib;opencv_highgui490d.lib;opencv_imgcodecs490d.lib;opencv_imgproc490d.lib;opencv_ml490d.lib;opencv_objdetect490d.lib;opencv_photo490d.lib;opencv_stitching490d.lib;opencv_video490d.lib;opencv_videoio490d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_core490d.lib;opencv_calib3d490d.lib;opencv_dnn490d.lib;opencv_features2d490d.lib;opencv_flann490d.lib;opencv_gapi490d.lib;opencv_highgui490d.lib;opencv_imgcodecs490d.lib;opencv_imgproc490d.lib;opencv_ml490d.lib;opencv_objdetect490d.lib;opencv_photo490d.lib;opencv_stitching490d.lib;opencv_video490d.lib;opencv_videoio490d.lib;opencv_core490.lib;opencv_calib3d490.lib;opencv_dnn490.lib;opencv_features2d490.lib;opencv_flann490.lib;opencv_gapi490.lib;opencv_highgui490.lib;opencv_imgcodecs490.lib;opencv_imgproc490.lib;opencv_ml490.lib;opencv_objdetect490.lib;opencv_photo490.lib;opencv_stitching490.lib;opencv_video490.lib;opencv_videoio490.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
