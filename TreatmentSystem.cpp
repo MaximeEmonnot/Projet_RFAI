@@ -2,20 +2,6 @@
 
 #include <opencv2/opencv.hpp>
 
-// **************** SINGLETON STUFF ********************* //
-
-std::unique_ptr<TreatmentSystem> TreatmentSystem::pInstance = nullptr;
-
-TreatmentSystem& TreatmentSystem::GetInstance()
-{
-    if(!pInstance)
-        pInstance = std::make_unique<TreatmentSystem>();
-    return *pInstance;
-}
-
-// **************** END SINGLETON STUFF **************** //
-
-
 
 
 void TreatmentSystem::RunTests(std::string const& path)
