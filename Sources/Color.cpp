@@ -5,12 +5,12 @@ Color::Color(cv::Vec3b const& input)
 {}
 
 Color::Color(uint8_t red, uint8_t green, uint8_t blue)
-: color(cv::Vec3b(red, green, blue))
+: color(cv::Vec3b(blue, green, red))
 {}
 
 uint8_t Color::GetRed() const
 {
-    return color[0];
+    return color[2];
 }
 
 uint8_t Color::GetGreen() const
@@ -20,7 +20,7 @@ uint8_t Color::GetGreen() const
 
 uint8_t Color::GetBlue() const
 {
-    return color[2];
+    return color[1];
 }
 
 cv::Vec3b Color::GetColor() const

@@ -5,9 +5,9 @@
 
 void Test()
 {
-    cv::Mat src = cv::imread(cv::samples::findFile("Assets / IMG_0225.jpg"), cv::IMREAD_COLOR);
+    cv::Mat src = cv::imread("Assets/IMG_0225.jpg");
 
-    std::vector<cv::Mat> bgr_planes;
+	std::vector<cv::Mat> bgr_planes;
     split(src, bgr_planes);
 
     int histSize = 256;
@@ -40,8 +40,12 @@ void Test()
 			cv::Scalar(0, 0, 255), 2, 8, 0);
     }
 
-    imshow("Source image", src);
+	namedWindow("Source image", cv::WINDOW_AUTOSIZE);
+	imshow("Source image", src);
+	namedWindow("calcHist Demo", cv::WINDOW_AUTOSIZE);
     imshow("calcHist Demo", histImage);
+
+	cv::imwrite("Outputs/Histogram.png", histImage);
 	cv::waitKey();
 }
 
@@ -49,10 +53,10 @@ void Safe()
 {
 	try
 	{
-		Image  const image("Assets/Test.jpg");
+		Image  const image("Assets/IMG_0212.jpg");
 		Window const window("Original Window");
 
-		Image  const filter = Transformations::ToGrayScale(image);
+		Image  const filter = Transformations::MaskChannel(image, NONE);
 		Window const filterWindow("Filter Window");
 
 		window.DisplayImage(image);
@@ -77,8 +81,8 @@ int main()
 	// Commenter l'un ou l'autre
 	// Test : Tous les bouts de code qu'on souhaiterais tester à part, sans se poser de question concernant une bonne structure ou non
 	// Safe : Code bien structuré
-	Test();
-	// Safe();
+	// Test();
+	Safe();
 
 	return 0;
 }

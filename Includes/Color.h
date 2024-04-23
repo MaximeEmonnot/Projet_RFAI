@@ -1,6 +1,14 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 
+enum ColorChannel : uint8_t
+{
+	NONE  = 0,
+    RED   = 1,
+    GREEN = 2,
+    BLUE  = 4
+};
+
 class Color
 {
 public:
