@@ -3,7 +3,12 @@
 #include <Transformations.h>
 #include <Window.h>
 
-int main()
+void Test()
+{
+	
+}
+
+void Safe()
 {
 	try
 	{
@@ -13,7 +18,7 @@ int main()
 		Image  const filter = Transformations::ToGrayScale(image);
 		Window const filterWindow("Filter Window");
 
-		window      .DisplayImage(image);
+		window.DisplayImage(image);
 		filterWindow.DisplayImage(filter);
 	}
 	catch(EngineException const& e)
@@ -28,6 +33,15 @@ int main()
 	{
 		EngineException::DisplayMessageBox(L"Unknown Exception", L"An unknown exception has occurred!");
 	}
+}
+
+int main()
+{
+	// Commenter l'un ou l'autre
+	// Test : Tous les bouts de code qu'on souhaiterais tester à part, sans se poser de question concernant une bonne structure ou non
+	// Safe : Code bien structuré
+	Test();
+	// Safe();
 
 	return 0;
 }
