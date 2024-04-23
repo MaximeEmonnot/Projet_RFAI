@@ -20,9 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\Main.cpp" />
+    <ClCompile Include="TreatmentSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Includes\EngineException.h" />
+    <ClInclude Include="TreatmentSystem.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
