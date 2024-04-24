@@ -6,7 +6,7 @@
 
 void TreatmentSystem::RunTests(std::string const& path)
 {
-	TestHSVSaturationIdea(path);
+	TestLabDarkenIdea(path);
 }
 
 
@@ -92,8 +92,8 @@ void TreatmentSystem::TestHistogramHSV(std::string const& path)
 	cv::Mat src = cv::imread(path);
 	cv::cvtColor(src, src, cv::COLOR_BGR2HSV);
 
-	std::vector<cv::Mat> bgr_planes;
-	split(src, bgr_planes);
+	std::vector<cv::Mat> hsv_planes;
+	split(src, hsv_planes);
 
 	int histSize = 256;
 	float range[] = { 0, 256 };
@@ -101,9 +101,9 @@ void TreatmentSystem::TestHistogramHSV(std::string const& path)
 	bool uniform = true, accumulate = false;
 
 	cv::Mat h_hist, s_hist, v_hist;
-	calcHist(&bgr_planes[0], 1, 0, cv::Mat(), h_hist, 1, &histSize, histRange, uniform, accumulate);
-	calcHist(&bgr_planes[1], 1, 0, cv::Mat(), s_hist, 1, &histSize, histRange, uniform, accumulate);
-	calcHist(&bgr_planes[2], 1, 0, cv::Mat(), v_hist, 1, &histSize, histRange, uniform, accumulate);
+	calcHist(&hsv_planes[0], 1, 0, cv::Mat(), h_hist, 1, &histSize, histRange, uniform, accumulate);
+	calcHist(&hsv_planes[1], 1, 0, cv::Mat(), s_hist, 1, &histSize, histRange, uniform, accumulate);
+	calcHist(&hsv_planes[2], 1, 0, cv::Mat(), v_hist, 1, &histSize, histRange, uniform, accumulate);
 
 	int hist_w = 512, hist_h = 400;
 	int bin_w = cvRound((double)hist_w / histSize);
@@ -126,9 +126,57 @@ void TreatmentSystem::TestHistogramHSV(std::string const& path)
 	}
 
 	imshow("Source image", src);
-	imshow("Source image - Hue", bgr_planes[0]);
-	imshow("Source image - Saturation", bgr_planes[1]);
-	imshow("Source image - Value", bgr_planes[2]);
+	imshow("Source image - Hue", hsv_planes[0]);
+	imshow("Source image - Saturation", hsv_planes[1]);
+	imshow("Source image - Value", hsv_planes[2]);
+	imshow("calcHist Demo", histImage);
+
+	cv::imwrite("Outputs/Histogram.png", histImage);
+	cv::waitKey();
+}
+
+void TreatmentSystem::TestHistogramLab(std::string const& path)
+{
+	cv::Mat src = cv::imread(path);
+	cv::cvtColor(src, src, cv::COLOR_BGR2Lab);
+
+	std::vector<cv::Mat> lab_planes;
+	split(src, lab_planes);
+
+	int histSize = 256;
+	float range[] = { 0, 256 };
+	const float* histRange[] = { range };
+	bool uniform = true, accumulate = false;
+
+	cv::Mat l_hist, a_hist, b_hist;
+	calcHist(&lab_planes[0], 1, 0, cv::Mat(), l_hist, 1, &histSize, histRange, uniform, accumulate);
+	calcHist(&lab_planes[1], 1, 0, cv::Mat(), a_hist, 1, &histSize, histRange, uniform, accumulate);
+	calcHist(&lab_planes[2], 1, 0, cv::Mat(), b_hist, 1, &histSize, histRange, uniform, accumulate);
+
+	int hist_w = 512, hist_h = 400;
+	int bin_w = cvRound((double)hist_w / histSize);
+	cv::Mat histImage(hist_h, hist_w, CV_8UC3, cv::Scalar(0, 0, 0));
+
+	normalize(l_hist, l_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
+	normalize(a_hist, a_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
+	normalize(b_hist, b_hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
+
+	for(int i = 1; i < histSize; i++) {
+		line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(l_hist.at<float>(i - 1))),
+			cv::Point(bin_w * i, hist_h - cvRound(l_hist.at<float>(i))),
+			cv::Scalar(255, 255, 255), 2, 8, 0);
+		line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(a_hist.at<float>(i - 1))),
+			cv::Point(bin_w * i, hist_h - cvRound(a_hist.at<float>(i))),
+			cv::Scalar(0, 255, 0), 2, 8, 0);
+		line(histImage, cv::Point(bin_w * (i - 1), hist_h - cvRound(b_hist.at<float>(i - 1))),
+			cv::Point(bin_w * i, hist_h - cvRound(b_hist.at<float>(i))),
+			cv::Scalar(255, 0, 0), 2, 8, 0);
+	}
+
+	imshow("Source image", src);
+	imshow("Source image - Lightness", lab_planes[0]);
+	imshow("Source image - A*", lab_planes[1]);
+	imshow("Source image - B*", lab_planes[2]);
 	imshow("calcHist Demo", histImage);
 
 	cv::imwrite("Outputs/Histogram.png", histImage);
@@ -252,7 +300,7 @@ void TreatmentSystem::TestColorspaces(std::string const& path)
     cv::Mat src = cv::imread(path);
 
     cv::Mat dst;
-    cv::cvtColor(src, dst, cv::COLOR_BGR2HSV);
+    cv::cvtColor(src, dst, cv::COLOR_BGR2Lab);
 
 	cv::namedWindow("Original");
 	cv::namedWindow("Colorspace");
@@ -434,6 +482,66 @@ void TreatmentSystem::TestHSVSaturationIdea(std::string const& path)
 	cv::imshow("Keypoints", imgKeypoints);
 	cv::waitKey();
 
+}
+
+void TreatmentSystem::TestLabDarkenIdea(std::string const& path)
+{
+	cv::Mat src = cv::imread(path);
+	cv::Mat lab;
+
+	cv::cvtColor(src, lab, cv::COLOR_BGR2Lab);
+
+	std::vector<cv::Mat> lab_planes;
+	split(lab, lab_planes);
+
+	cv::Mat b_star = lab_planes[2];
+
+	cv::Mat blurred;
+	cv::medianBlur(b_star, blurred, 7);
+
+
+	cv::SimpleBlobDetector::Params params;
+	// Thresholds
+	params.minThreshold = 1.f;
+	params.maxThreshold = 176.f;
+
+	// Filter by Area
+	params.filterByArea = true;
+	params.minArea = 100.f;
+
+	// Filter by Circularity
+	params.filterByCircularity = true;
+	params.minCircularity = 0.01f;
+
+	// Filter by Convexity
+	params.filterByConvexity = true;
+	params.minConvexity = 0.5f;
+
+	// Filter by Inertia
+	params.filterByInertia = true;
+	params.minInertiaRatio = 0.00000001f;
+
+	// Filter by Color
+	params.filterByColor = false;
+	params.blobColor = 0;
+
+	cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);
+
+	std::vector<cv::KeyPoint> keypoints;
+	detector->detect(blurred, keypoints);
+
+	std::cout << "Keypoints : " << keypoints.size() << std::endl;
+
+	cv::Mat imgKeypoints;
+	cv::drawKeypoints(src, keypoints, imgKeypoints, cv::Scalar(0, 0, 255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+
+	cv::imshow("Original", src);
+	cv::imshow("Lab", lab);
+	cv::imshow("B*", b_star);
+	cv::imshow("Blur", blurred);
+	cv::imshow("Keypoints", imgKeypoints);
+
+	cv::waitKey();
 }
 
 // ****************** END TEST FUNCTIONS ********************** //
