@@ -6,7 +6,7 @@
 
 void TreatmentSystem::RunTests(std::string const& path)
 {
-	TestLabDarkenIdea(path);
+	TestHistogramHSV(path);
 }
 
 
@@ -540,6 +540,60 @@ void TreatmentSystem::TestLabDarkenIdea(std::string const& path)
 	cv::imshow("B*", b_star);
 	cv::imshow("Blur", blurred);
 	cv::imshow("Keypoints", imgKeypoints);
+
+	cv::waitKey();
+}
+
+void TreatmentSystem::TestContourDetection(std::string const& path)
+{
+	cv::Mat src = cv::imread(path);
+
+	cv::Mat hsv;
+	cv::cvtColor(src, hsv, cv::COLOR_BGR2HSV);
+
+	cv::Mat gray;
+	cv::cvtColor(hsv, gray, cv::COLOR_BGR2GRAY);
+
+	cv::Mat mask;
+	cv::inRange(gray, cv::Scalar(0, 0, 0), cv::Scalar(100, 100, 100), mask);
+
+	cv::Mat laplacianImage;
+	cv::Laplacian(gray, laplacianImage, CV_64F);
+
+	cv::Scalar mean, stddev;
+	cv::meanStdDev(laplacianImage, mean, stddev, cv::Mat());
+	double variance = stddev.val[0] * stddev.val[0];
+	if(variance <= 10)
+	{
+		std::cout << "L'image est floue" << std::endl;
+		return;
+	}
+
+	std::vector<std::vector<cv::Point>> contours;
+	cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+	for(auto const& contour : contours)
+	{
+		cv::Rect boundingRect = cv::boundingRect(contour);
+		cv::rectangle(src, boundingRect, cv::Scalar(0, 0, 255), 2);
+	}
+
+	cv::imshow("Resultat", src);
+
+	cv::waitKey();
+}
+
+void TreatmentSystem::TestBackgroundSubtractor(std::string const& path)
+{
+	cv::Mat src = cv::imread(path);
+
+	cv::Ptr<cv::BackgroundSubtractor> pBackSub = cv::createBackgroundSubtractorMOG2();
+
+	cv::Mat fgMask;
+	pBackSub->apply(src, fgMask);
+
+	cv::imshow("Original", src);
+	cv::imshow("Mask", fgMask);
 
 	cv::waitKey();
 }

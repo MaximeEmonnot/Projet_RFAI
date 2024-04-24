@@ -21,5 +21,7 @@ private:
     static void TestSegmentation(std::string const& path);
     static void TestHSVSaturationIdea(std::string const& path);
     static void TestLabDarkenIdea(std::string const& path);
+    static void TestContourDetection(std::string const& path);
+    static void TestBackgroundSubtractor(std::string const& path);
 };
 
