@@ -663,6 +663,7 @@ void TreatmentSystem::TestHistogramEqualization(std::string const& path)
 
 
 
+
 	cv::Mat threshedInvSat;
 	cv::threshold(invSat, threshedInvSat, 199, 255, cv::THRESH_BINARY);
 
