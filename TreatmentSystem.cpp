@@ -635,7 +635,7 @@ void TreatmentSystem::TestHistogramEqualization(std::string const& path)
 	cv::fillPoly(mask, contours, cv::Scalar(255, 255, 255));
 
 	cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 40, 1, 1);
-	cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), 35, 1, 1);
+	cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), 30, 1, 1);
 
 	cv::Mat cutout;
 	cv::bitwise_and(src, src, cutout, mask);
@@ -658,7 +658,37 @@ void TreatmentSystem::TestHistogramEqualization(std::string const& path)
 
 	//cv::equalizeHist(sat, sat);
 
-	cv::SimpleBlobDetector::Params params;
+	cv::Mat invSat;
+	cv::bitwise_not(sat, invSat);
+
+
+
+	cv::Mat threshedInvSat;
+	cv::threshold(invSat, threshedInvSat, 199, 255, cv::THRESH_BINARY);
+
+	std::vector<std::vector<cv::Point>> contoursss;
+	cv::findContours(threshedInvSat, contoursss, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+	cv::Mat testContours = src.clone();
+
+	for(int i = 0; i < contoursss.size(); i++)
+	{
+		// Affichage des contours en bleu
+		cv::drawContours(testContours, contoursss, i, cv::Scalar(255, 0, 0));
+
+		// Affichage d'un rectangle avec rotation englobant le contour
+		cv::RotatedRect r = cv::minAreaRect(contoursss[i]);
+		cv::Point2f pts[4];
+		r.points(pts);
+		for(int j = 0; j < 4; j++)
+			cv::line(testContours, pts[j], pts[(j + 1) % 4], cv::Scalar(0, 0, 255));
+
+		// Affichage boîte englobante
+		cv::Rect box = cv::boundingRect(contoursss[i]);
+		cv::rectangle(testContours, box, cv::Scalar(0, 255, 0));
+	}
+
+	/*cv::SimpleBlobDetector::Params params;
 	// Thresholds
 	params.minThreshold = 1.f;
 	params.maxThreshold = 102.f;
@@ -696,17 +726,20 @@ void TreatmentSystem::TestHistogramEqualization(std::string const& path)
 	{
 		cv::Rect rec = cv::Rect(keypoint.pt.x - keypoint.size / 2, keypoint.pt.y - keypoint.size / 2, keypoint.size, keypoint.size);
 		cv::rectangle(imgKeypoints, rec, cv::Scalar(0, 0, 255), 2);
-	}
+	}*/
 
 	cv::imshow("Original", src);
 	cv::imshow("Equalized", equalizedImage);
 	cv::imshow("Threshold", thresh);
 	cv::imshow("Contours", mask);
 	cv::imshow("Cutout", cutout);
-	cv::imshow("Equalized Saturation", sat);
-	cv::imshow("Keypoints", imgKeypoints);
+	cv::imshow("Equalized Saturation", threshedInvSat);
+	cv::imshow("Test contours", testContours);
+	//cv::imshow("Keypoints", imgKeypoints);
 
 	cv::waitKey();
+
+	cv::destroyAllWindows();
 }
 
 // ****************** END TEST FUNCTIONS ********************** //
