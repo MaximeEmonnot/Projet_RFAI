@@ -23,5 +23,6 @@ private:
     static void TestLabDarkenIdea(std::string const& path);
     static void TestContourDetection(std::string const& path);
     static void TestBackgroundSubtractor(std::string const& path);
+    static void TestHistogramEqualization(std::string const& path);
 };
 

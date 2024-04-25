@@ -6,7 +6,7 @@
 
 void TreatmentSystem::RunTests(std::string const& path)
 {
-	TestHistogramHSV(path);
+	TestHistogramEqualization(path);
 }
 
 
@@ -594,6 +594,117 @@ void TreatmentSystem::TestBackgroundSubtractor(std::string const& path)
 
 	cv::imshow("Original", src);
 	cv::imshow("Mask", fgMask);
+
+	cv::waitKey();
+}
+
+void TreatmentSystem::TestHistogramEqualization(std::string const& path)
+{
+	cv::Mat src = cv::imread(path);
+
+
+	cv::Mat equalizedImage;
+	cv::cvtColor(src, equalizedImage, cv::COLOR_BGR2YCrCb);
+
+	std::vector<cv::Mat> vec_channels;
+	cv::split(equalizedImage, vec_channels);
+
+	cv::equalizeHist(vec_channels[0], vec_channels[0]);
+
+	cv::merge(vec_channels, equalizedImage);
+
+	cv::cvtColor(equalizedImage, equalizedImage, cv::COLOR_YCrCb2BGR);
+
+	cv::cvtColor(equalizedImage, equalizedImage, cv::COLOR_BGR2GRAY);
+
+	cv::medianBlur(equalizedImage, equalizedImage, 7);
+
+	cv::Mat thresh;
+
+	cv::adaptiveThreshold(equalizedImage, thresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 9, -1);
+
+	cv::medianBlur(thresh, thresh, 3);
+	cv::dilate(thresh, thresh, cv::Mat(), cv::Point(-1, -1), 4, 1, 1);
+
+	std::vector<std::vector<cv::Point>> contours;
+	cv::findContours(thresh, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+
+	cv::Mat mask = thresh.clone();
+	//cv::drawContours(srcContours, contours, -1, cv::Scalar(255, 0, 0), 2); 
+	cv::fillPoly(mask, contours, cv::Scalar(255, 255, 255));
+
+	cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 40, 1, 1);
+	cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), 35, 1, 1);
+
+	cv::Mat cutout;
+	cv::bitwise_and(src, src, cutout, mask);
+
+	cv::cvtColor(cutout, cutout, cv::COLOR_BGR2HSV);
+
+	std::vector<cv::Mat> channels;
+	cv::split(cutout, channels);
+
+	for(int i = 0; i < channels[1].rows; i++)
+		for(int j = 0; j < channels[1].cols; j++)
+			if(channels[1].at<cv::Vec3b>(i, j) == cv::Vec3b{0, 0, 0})
+			{
+				channels[1].at<cv::Vec3b>(i, j) = cv::Vec3b{ 255, 255, 255 };
+			}
+
+	cv::Mat sat = channels[1].clone();
+
+	cv::medianBlur(sat, sat, 7);
+
+	//cv::equalizeHist(sat, sat);
+
+	cv::SimpleBlobDetector::Params params;
+	// Thresholds
+	params.minThreshold = 1.f;
+	params.maxThreshold = 102.f;
+
+	// Filter by Area
+	params.filterByArea = true;
+	params.minArea = 200.f;
+
+	// Filter by Circularity
+	params.filterByCircularity = true;
+	params.minCircularity = 0.01f;
+
+	// Filter by Convexity
+	params.filterByConvexity = true;
+	params.minConvexity = 0.65f;
+
+	// Filter by Inertia
+	params.filterByInertia = true;
+	params.minInertiaRatio = 0.1f;
+
+	// Filter by Color
+	params.filterByColor = false;
+	params.blobColor = 0;
+
+	cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);
+
+	std::vector<cv::KeyPoint> keypoints;
+	detector->detect(sat, keypoints);
+
+	std::cout << "Keypoints : " << keypoints.size() << std::endl;
+
+	cv::Mat imgKeypoints = src.clone();
+
+	for(auto keypoint : keypoints)
+	{
+		cv::Rect rec = cv::Rect(keypoint.pt.x - keypoint.size / 2, keypoint.pt.y - keypoint.size / 2, keypoint.size, keypoint.size);
+		cv::rectangle(imgKeypoints, rec, cv::Scalar(0, 0, 255), 2);
+	}
+
+	cv::imshow("Original", src);
+	cv::imshow("Equalized", equalizedImage);
+	cv::imshow("Threshold", thresh);
+	cv::imshow("Contours", mask);
+	cv::imshow("Cutout", cutout);
+	cv::imshow("Equalized Saturation", sat);
+	cv::imshow("Keypoints", imgKeypoints);
 
 	cv::waitKey();
 }
