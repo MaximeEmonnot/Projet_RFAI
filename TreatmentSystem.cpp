@@ -6,7 +6,7 @@
 
 void TreatmentSystem::RunTests(std::string const& path)
 {
-	TestHistogramEqualization(path);
+	TestGrabCut(path);
 }
 
 
@@ -629,7 +629,6 @@ void TreatmentSystem::TestHistogramEqualization(std::string const& path)
 	std::vector<std::vector<cv::Point>> contours;
 	cv::findContours(thresh, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
-
 	cv::Mat mask = thresh.clone();
 	//cv::drawContours(srcContours, contours, -1, cv::Scalar(255, 0, 0), 2); 
 	cv::fillPoly(mask, contours, cv::Scalar(255, 255, 255));
@@ -660,6 +659,7 @@ void TreatmentSystem::TestHistogramEqualization(std::string const& path)
 
 	cv::Mat invSat;
 	cv::bitwise_not(sat, invSat);
+
 
 
 
@@ -741,6 +741,81 @@ void TreatmentSystem::TestHistogramEqualization(std::string const& path)
 	cv::waitKey();
 
 	cv::destroyAllWindows();
+}
+
+void TreatmentSystem::TestGrabCut(std::string const& path)
+{
+	cv::Mat src     = cv::imread(path);
+
+	cv::Mat grabCutSrc = src.clone();
+
+	cv::Mat result;
+	cv::Mat bgModel, fgModel;
+
+	cv::grabCut(grabCutSrc, result, cv::Rect(1, 1, src.cols - 1, src.rows - 1), bgModel, fgModel, 25, cv::GC_INIT_WITH_RECT);
+
+	cv::compare(result, cv::GC_PR_FGD, result, cv::CMP_EQ);
+
+	cv::Mat foreground(src.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+	grabCutSrc.copyTo(foreground, result);
+
+	cv::erode(foreground, foreground, cv::Mat(), cv::Point(-1, -1), 1, 1, 1);
+
+	cv::Mat hsv;
+	cv::cvtColor(foreground, hsv, cv::COLOR_BGR2HSV);
+
+	std::vector<cv::Mat> hsv_channels;
+	cv::split(hsv, hsv_channels);
+
+	cv::Mat gray = hsv_channels[1];
+
+	for(int i = 0; i < gray.rows; i++)
+		for(int j = 0; j < gray.cols; j++)
+			if(gray.at<cv::Vec3b>(i, j) == cv::Vec3b{0, 0, 0})
+				gray.at<cv::Vec3b>(i, j) = cv::Vec3b{ 255, 255, 255 };
+
+
+	double minVal;
+	cv::minMaxLoc(gray, &minVal);
+
+	cv::subtract(gray, cv::Scalar(64), gray);
+
+	cv::normalize(gray, gray, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+
+	cv::bitwise_not(gray, gray);
+
+	cv::erode(gray, gray, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
+
+	cv::threshold(gray, gray, 254, 255, cv::THRESH_BINARY);
+
+	std::vector<std::vector<cv::Point>> contours;
+	cv::findContours(gray, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+	cv::Mat testContours = src.clone();
+
+	for(int i = 0; i < contours.size(); i++)
+	{
+		// Affichage des contours en bleu
+		cv::drawContours(testContours, contours, i, cv::Scalar(255, 0, 0));
+
+		// Affichage d'un rectangle avec rotation englobant le contour
+		cv::RotatedRect r = cv::minAreaRect(contours[i]);
+		cv::Point2f pts[4];
+		r.points(pts);
+		for(int j = 0; j < 4; j++)
+			cv::line(testContours, pts[j], pts[(j + 1) % 4], cv::Scalar(0, 0, 255));
+
+		// Affichage boîte englobante
+		cv::Rect box = cv::boundingRect(contours[i]);
+		cv::rectangle(testContours, box, cv::Scalar(0, 255, 0));
+	}
+
+	cv::imshow("Original", src);
+	cv::imshow("GrabCut", foreground);
+	cv::imshow("GrabCut Gray", gray);
+	cv::imshow("GrabCut Contours", testContours);
+
+	cv::waitKey();
 }
 
 // ****************** END TEST FUNCTIONS ********************** //

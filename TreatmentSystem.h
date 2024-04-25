@@ -24,5 +24,6 @@ private:
     static void TestContourDetection(std::string const& path);
     static void TestBackgroundSubtractor(std::string const& path);
     static void TestHistogramEqualization(std::string const& path);
+    static void TestGrabCut(std::string const& path);
 };
 
