@@ -24,6 +24,12 @@ private:
     static void TestContourDetection(std::string const& path);
     static void TestBackgroundSubtractor(std::string const& path);
     static void TestHistogramEqualization(std::string const& path);
+    static void TestLeafCanny(std::string const& path);
+    static void TestLeafSobel(std::string const& path);
+    static void TestLeafLaplacian(std::string const& path);
     static void TestGrabCut(std::string const& path);
+    static void TestNegative(std::string const& path);
+
+    static void DisplayColorspaces(std::string const& path); 
 };
 

@@ -647,9 +647,7 @@ void TreatmentSystem::TestHistogramEqualization(std::string const& path)
 	for(int i = 0; i < channels[1].rows; i++)
 		for(int j = 0; j < channels[1].cols; j++)
 			if(channels[1].at<cv::Vec3b>(i, j) == cv::Vec3b{0, 0, 0})
-			{
 				channels[1].at<cv::Vec3b>(i, j) = cv::Vec3b{ 255, 255, 255 };
-			}
 
 	cv::Mat sat = channels[1].clone();
 
@@ -743,6 +741,138 @@ void TreatmentSystem::TestHistogramEqualization(std::string const& path)
 	cv::destroyAllWindows();
 }
 
+void TreatmentSystem::TestLeafCanny(std::string const& path)
+{
+	cv::Mat src = cv::imread(path);
+
+	cv::Mat hsv;
+	cv::cvtColor(src, hsv, cv::COLOR_BGR2HSV);
+
+	std::vector<cv::Mat> hsv_channels;
+	cv::split(hsv, hsv_channels);
+
+	cv::Mat value;
+
+	cv::equalizeHist(hsv_channels[2], value);
+	//cv::equalizeHist(hsv_channels[1], value);
+
+	cv::Mat edges;
+	cv::Canny(value, edges, 10, 123);
+
+	cv::dilate(edges, edges, cv::Mat(), cv::Point(-1, -1), 3, 1, 1);
+
+	std::vector<std::vector<cv::Point>> contours;
+	cv::findContours(edges, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+	cv::Mat mask = edges.clone();
+	cv::fillPoly(mask, contours, cv::Scalar(255, 255, 255));
+
+	cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 12, 1, 1);
+	cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), 3, 1, 1);
+
+	cv::Mat cutout;
+	cv::bitwise_and(src, src, cutout, mask);
+
+	cv::imshow("Original", src);
+	cv::imshow("Valeur égalisé", value);
+	cv::imshow("Edges", edges);
+	cv::imshow("Mask", mask);
+	cv::imshow("Cutout", cutout);
+
+	cv::imwrite("Outputs/Canny.png", cutout);
+
+	cv::waitKey();
+}
+
+void TreatmentSystem::TestLeafSobel(std::string const& path)
+{
+	cv::Mat src = cv::imread(path);
+
+	cv::Mat hsv;
+	cv::cvtColor(src, hsv, cv::COLOR_BGR2HSV);
+
+	std::vector<cv::Mat> hsv_channels;
+	cv::split(hsv, hsv_channels);
+
+	cv::Mat value = hsv_channels[2];
+
+	cv::equalizeHist(hsv_channels[2], value);
+	cv::GaussianBlur(value, value, cv::Size(9, 9), 0);
+
+	cv::Mat edges;
+	cv::Sobel(value, edges, CV_8UC1, 1, 1, 5);
+
+	cv::threshold(edges, edges, 15, 255, cv::THRESH_BINARY);
+
+	cv::dilate(edges, edges, cv::Mat(), cv::Point(-1, -1), 3, 1, 1);
+
+	std::vector<std::vector<cv::Point>> contours;
+	cv::findContours(edges, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+	cv::Mat mask = edges.clone();
+	cv::fillPoly(mask, contours, cv::Scalar(255, 255, 255));
+
+	cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 12, 1, 1);
+	cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), 3, 1, 1);
+
+	cv::Mat cutout;
+	cv::bitwise_and(src, src, cutout, mask);
+
+	cv::imshow("Original", src);
+	cv::imshow("Valeur égalisé", value);
+	cv::imshow("Edges", edges);
+	cv::imshow("Mask", mask);
+	cv::imshow("Cutout", cutout);
+
+	cv::imwrite("Outputs/Sobel.png", cutout);
+
+	cv::waitKey();
+}
+
+void TreatmentSystem::TestLeafLaplacian(std::string const& path)
+{
+	cv::Mat src = cv::imread(path);
+
+	cv::Mat hsv;
+	cv::cvtColor(src, hsv, cv::COLOR_BGR2HSV);
+
+	std::vector<cv::Mat> hsv_channels;
+	cv::split(hsv, hsv_channels);
+
+	cv::Mat value = hsv_channels[2];
+
+	cv::equalizeHist(hsv_channels[2], value);
+	cv::GaussianBlur(value, value, cv::Size(9, 9), 0);
+
+	cv::Mat edges;
+	cv::Laplacian(value, edges, CV_8UC1);
+
+	
+	cv::threshold(edges, edges, 2, 255, cv::THRESH_BINARY);
+
+	cv::dilate(edges, edges, cv::Mat(), cv::Point(-1, -1), 3, 1, 1);
+
+	std::vector<std::vector<cv::Point>> contours;
+	cv::findContours(edges, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+	cv::Mat mask = edges.clone();
+	cv::fillPoly(mask, contours, cv::Scalar(255, 255, 255));
+
+	cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 12, 1, 1);
+	cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), 3, 1, 1);
+
+	
+	cv::Mat cutout;
+	cv::bitwise_and(src, src, cutout, mask);
+	
+	cv::imshow("Original", src);
+	cv::imshow("Valeur égalisé", value);
+	cv::imshow("Edges", edges);
+	cv::imshow("Mask", mask);
+	cv::imshow("Cutout", cutout);
+
+	cv::imwrite("Outputs/Laplacian.png", cutout);
+
+	cv::waitKey();
+}
+
 void TreatmentSystem::TestGrabCut(std::string const& path)
 {
 	cv::Mat src     = cv::imread(path);
@@ -761,59 +891,264 @@ void TreatmentSystem::TestGrabCut(std::string const& path)
 
 	cv::erode(foreground, foreground, cv::Mat(), cv::Point(-1, -1), 1, 1, 1);
 
-	cv::Mat hsv;
+	/*
+	std::vector<cv::Mat> bgr_channels;
+	cv::split(foreground, bgr_channels);
+
+	cv::Mat green = bgr_channels[1];
+
+	cv::SimpleBlobDetector::Params params;
+	// Thresholds
+	params.minThreshold = 80.f;
+	params.maxThreshold = 111.f;
+
+	// Filter by Area
+	params.filterByArea = true;
+	params.minArea = 1000.f;
+
+	// Filter by Circularity
+	params.filterByCircularity = true;
+	params.minCircularity = 0.1f;
+
+	// Filter by Convexity
+	params.filterByConvexity = true;
+	params.minConvexity = 0.5f;
+
+	// Filter by Inertia
+	params.filterByInertia = true;
+	params.minInertiaRatio = 0.00000001f;
+
+	// Filter by Color
+	params.filterByColor = false;
+	params.blobColor = 0;
+
+	cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);
+
+	std::vector<cv::KeyPoint> keyPoints;
+	detector->detect(green, keyPoints);
+
+	std::cout << "Keypoints : " << keyPoints.size() << std::endl;
+
+	cv::Mat imgKeypoints;
+	cv::drawKeypoints(foreground, keyPoints, imgKeypoints, cv::Scalar(0, 0, 255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+
+	cv::imshow("Keypoints", imgKeypoints);
+	*/
+
+	cv::Mat lab;
+	cv::cvtColor(foreground, lab, cv::COLOR_BGR2Lab);
+
+	std::vector<cv::Mat> lab_channels;
+	cv::split(lab, lab_channels);
+
+	cv::Mat mask;
+	cv::threshold(lab_channels[1], mask, 115, 255, cv::THRESH_BINARY);
+
+	cv::Mat cutout;
+	cv::bitwise_and(foreground, foreground, cutout, mask);
+
+	cv::erode(cutout, cutout, cv::Mat(), cv::Point(-1, -1), 1, 1, 1);
+
+	cv::cvtColor(cutout, cutout, cv::COLOR_BGR2GRAY);
+	std::vector<std::vector<cv::Point>> contours;
+	cv::findContours(cutout, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+	for(int i = 0; i < contours.size(); i++)
+	{
+		// Affichage des contours en bleu
+			cv::drawContours(foreground, contours, i, cv::Scalar(255, 0, 0));
+
+		// Affichage d'un rectangle avec rotation englobant le contour
+			cv::RotatedRect r = cv::minAreaRect(contours[i]);
+		cv::Point2f pts[4];
+		r.points(pts);
+		for(int j = 0; j < 4; j++)
+			cv::line(foreground, pts[j], pts[(j + 1) % 4], cv::Scalar(0, 0, 255));
+
+		// Affichage boîte englobante
+			cv::Rect box = cv::boundingRect(contours[i]);
+		cv::rectangle(foreground, box, cv::Scalar(0, 255, 0));
+	}
+
+	/*cv::Mat hsv;
 	cv::cvtColor(foreground, hsv, cv::COLOR_BGR2HSV);
 
 	std::vector<cv::Mat> hsv_channels;
 	cv::split(hsv, hsv_channels);
 
-	cv::Mat gray = hsv_channels[1];
+	for(int i = 0; i < hsv_channels[1].rows; i++)
+		for(int j = 0; j < hsv_channels[1].cols; j++)
+			if(hsv_channels[1].at<uchar>(i, j) == 0)
+				hsv_channels[1].at<uchar>(i, j) = 255;
 
-	for(int i = 0; i < gray.rows; i++)
-		for(int j = 0; j < gray.cols; j++)
-			if(gray.at<cv::Vec3b>(i, j) == cv::Vec3b{0, 0, 0})
-				gray.at<cv::Vec3b>(i, j) = cv::Vec3b{ 255, 255, 255 };
+	cv::Mat saturation_equalized;
+	cv::equalizeHist(hsv_channels[1], saturation_equalized);
 
+	cv::bitwise_not(saturation_equalized, saturation_equalized);
+	cv::medianBlur(saturation_equalized, saturation_equalized, 9);
+	cv::threshold(saturation_equalized, saturation_equalized, 230, 255, cv::THRESH_BINARY);
 
-	double minVal;
-	cv::minMaxLoc(gray, &minVal);
+	cv::erode(saturation_equalized, saturation_equalized, cv::Mat(), cv::Point(-1, -1), 3, 1, 1);
+	cv::dilate(saturation_equalized, saturation_equalized, cv::Mat(), cv::Point(-1, -1), 9, 1, 1);
 
-	cv::subtract(gray, cv::Scalar(64), gray);
+	cv::Mat cutout;
+	cv::bitwise_and(foreground, foreground, cutout, saturation_equalized);
 
-	cv::normalize(gray, gray, 0, 255, cv::NORM_MINMAX, CV_8UC1);
+	cv::Mat cutout_lab;
+	cv::cvtColor(cutout, cutout_lab, cv::COLOR_BGR2Lab);
 
-	cv::bitwise_not(gray, gray);
+	std::vector<cv::Mat> lab_channels;
+	cv::split(cutout_lab, lab_channels);
 
-	cv::erode(gray, gray, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
+	for(int i = 0; i < lab_channels[0].rows; i++)
+		for(int j = 0; j < lab_channels[0].cols; j++)
+			if(lab_channels[0].at<uchar>(i, j) == 0)
+				lab_channels[0].at<uchar>(i, j) = 255;
 
-	cv::threshold(gray, gray, 254, 255, cv::THRESH_BINARY);
+	cv::GaussianBlur(lab_channels[0], lab_channels[0], cv::Size(5, 5), 0);
+	cv::Mat invertedL;
+	cv::bitwise_not(lab_channels[0], invertedL);
+	cv::equalizeHist(invertedL, invertedL);
 
+	cv::Mat edges;
+	cv::Canny(invertedL, edges, 150, 250);
+	
 	std::vector<std::vector<cv::Point>> contours;
-	cv::findContours(gray, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
-
-	cv::Mat testContours = src.clone();
+	cv::findContours(saturation_equalized, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
 	for(int i = 0; i < contours.size(); i++)
 	{
-		// Affichage des contours en bleu
-		cv::drawContours(testContours, contours, i, cv::Scalar(255, 0, 0));
+		 Affichage des contours en bleu
+		cv::drawContours(foreground, contours, i, cv::Scalar(255, 0, 0));
 
-		// Affichage d'un rectangle avec rotation englobant le contour
+		 Affichage d'un rectangle avec rotation englobant le contour
 		cv::RotatedRect r = cv::minAreaRect(contours[i]);
 		cv::Point2f pts[4];
 		r.points(pts);
 		for(int j = 0; j < 4; j++)
-			cv::line(testContours, pts[j], pts[(j + 1) % 4], cv::Scalar(0, 0, 255));
+			cv::line(foreground, pts[j], pts[(j + 1) % 4], cv::Scalar(0, 0, 255));
 
-		// Affichage boîte englobante
+		 Affichage boîte englobante
 		cv::Rect box = cv::boundingRect(contours[i]);
-		cv::rectangle(testContours, box, cv::Scalar(0, 255, 0));
-	}
+		cv::rectangle(foreground, box, cv::Scalar(0, 255, 0));
+	}*/
 
+	//cv::threshold(lab_channels[1], a_star, 100, 255, cv::THRESH_BINARY);
+	
 	cv::imshow("Original", src);
 	cv::imshow("GrabCut", foreground);
-	cv::imshow("GrabCut Gray", gray);
-	cv::imshow("GrabCut Contours", testContours);
+	cv::imshow("Grabcut Mask", mask);
+	cv::imshow("Grabcut Cutout", cutout);
+	//cv::imshow("GrabCut Mask", saturation_equalized);
+	//cv::imshow("GrabCut Cutout", cutout);
+	//cv::imshow("GrabCut Cutout - L inverted", invertedL);
+	//cv::imshow("GrabCut Edges", edges);
+	//cv::imshow("GrabCut Edges", edges);
+
+	cv::imwrite("Outputs/AStarTâches.png", foreground);
+
+	cv::waitKey();
+}
+
+void TreatmentSystem::TestNegative(std::string const& path)
+{
+	cv::Mat src = cv::imread(path);
+
+	std::vector<cv::Mat> bgr_channels;
+	cv::split(src, bgr_channels);
+
+	cv::bitwise_not(bgr_channels[0], bgr_channels[0]);
+	cv::equalizeHist(bgr_channels[0], bgr_channels[0]);
+	cv::bitwise_not(bgr_channels[1], bgr_channels[1]);
+	//cv::equalizeHist(bgr_channels[1], bgr_channels[1]);
+	cv::bitwise_not(bgr_channels[2], bgr_channels[2]);
+	//cv::equalizeHist(bgr_channels[2], bgr_channels[2]);
+
+	cv::merge(bgr_channels, src);
+
+	cv::imshow("Negative", src);
+
+	cv::waitKey();
+}
+
+void TreatmentSystem::DisplayColorspaces(std::string const& path)
+{
+	cv::Mat bgr = cv::imread(path);
+
+	std::vector<cv::Mat> bgr_channels;
+	cv::split(bgr, bgr_channels);
+
+	cv::equalizeHist(bgr_channels[0], bgr_channels[0]);
+	cv::equalizeHist(bgr_channels[1], bgr_channels[1]);
+	cv::equalizeHist(bgr_channels[2], bgr_channels[2]);
+
+	cv::Mat hsv;
+	cv::cvtColor(bgr, hsv, cv::COLOR_BGR2HSV);
+
+	std::vector<cv::Mat> hsv_channels;
+	cv::split(hsv, hsv_channels);
+
+	cv::equalizeHist(hsv_channels[0], hsv_channels[0]);
+	cv::equalizeHist(hsv_channels[1], hsv_channels[1]);
+	cv::equalizeHist(hsv_channels[2], hsv_channels[2]);
+
+	cv::Mat lab;
+	cv::cvtColor(bgr, lab, cv::COLOR_BGR2Lab);
+
+	std::vector<cv::Mat> lab_channels;
+	cv::split(lab, lab_channels);
+
+	cv::equalizeHist(lab_channels[0], lab_channels[0]);
+	cv::equalizeHist(lab_channels[1], lab_channels[1]);
+	cv::equalizeHist(lab_channels[2], lab_channels[2]);
+
+	cv::Mat yuv;
+	cv::cvtColor(bgr, yuv, cv::COLOR_BGR2YCrCb);
+
+	std::vector<cv::Mat> yuv_channels;
+	cv::split(yuv, yuv_channels);
+
+	cv::equalizeHist(yuv_channels[0], yuv_channels[0]);
+	cv::equalizeHist(yuv_channels[1], yuv_channels[1]);
+	cv::equalizeHist(yuv_channels[2], yuv_channels[2]);
+
+	cv::Mat gray;
+	cv::cvtColor(bgr, gray, cv::COLOR_BGR2GRAY);
+
+	cv::imshow("RGB",             bgr);
+	cv::imshow("Red",             bgr_channels[2]);
+	cv::imshow("Green",           bgr_channels[1]);
+	cv::imshow("Blue",            bgr_channels[0]);
+	cv::imshow("HSV",             hsv);
+	cv::imshow("Hue",             hsv_channels[0]);
+	cv::imshow("Saturation",      hsv_channels[1]);
+	cv::imshow("Value",           hsv_channels[2]);
+	cv::imshow("L*a*b*",          lab);
+	cv::imshow("L*",              lab_channels[0]);
+	cv::imshow("a*",              lab_channels[1]);
+	cv::imshow("b*",              lab_channels[2]);
+	cv::imshow("YCrCb",           yuv);
+	cv::imshow("Luma",            yuv_channels[0]);
+	cv::imshow("Red-difference",  yuv_channels[1]);
+	cv::imshow("Blue-difference", yuv_channels[2]);
+	cv::imshow("Grayscale",       gray);
+
+	cv::imwrite("Outputs/Red.png", bgr_channels[2]);
+	cv::imwrite("Outputs/Green.png", bgr_channels[1]);
+	cv::imwrite("Outputs/Blue.png", bgr_channels[0]);
+	cv::imwrite("Outputs/HSV.png", hsv);
+	cv::imwrite("Outputs/Hue.png", hsv_channels[0]);
+	cv::imwrite("Outputs/Saturation.png", hsv_channels[1]);
+	cv::imwrite("Outputs/Value.png", hsv_channels[2]);
+	cv::imwrite("Outputs/Lab.png", lab);
+	cv::imwrite("Outputs/L.png", lab_channels[0]);
+	cv::imwrite("Outputs/a.png", lab_channels[1]);
+	cv::imwrite("Outputs/b.png", lab_channels[2]);
+	cv::imwrite("Outputs/YCrCb.png", yuv);
+	cv::imwrite("Outputs/Y.png", yuv_channels[0]);
+	cv::imwrite("Outputs/Cr.png", yuv_channels[1]);
+	cv::imwrite("Outputs/Cb.png", yuv_channels[2]);
+	cv::imwrite("Outputs/Grayscale.png", gray);
 
 	cv::waitKey();
 }
