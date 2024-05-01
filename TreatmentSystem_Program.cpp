@@ -12,7 +12,7 @@ void Program::Run(std::string const& path)
 	std::set<int> colorspaceChoices;
 	std::vector<std::pair<int, std::string>> colorspaces = { {0, "BGR"}, {cv::COLOR_BGR2HSV, "HSV"}, {cv::COLOR_BGR2Lab, "Lab"}, {cv::COLOR_BGR2YCrCb, "YCrCb"} };
 
-	std::cout << "Quelles etudes d'histogramme souhaitez-vous realiser ? (-1 pour finir la selection)" << std::endl;
+	std::cout << "Quels espaces de couleur souhaitez vous etudier ? (-1 pour finaliser la selection)" << std::endl;
 	for(size_t i = 0; i < colorspaces.size(); i++)
 		std::cout << i << " - " << colorspaces.at(i).second << std::endl;
 
@@ -41,9 +41,37 @@ void Program::Run(std::string const& path)
 
 	cv::Mat leaf = ExtractLeaf(src, { leafChoiceIndex, leafExtractionAlgorithms.at(leafChoiceIndex) });
 
+	// Recherche des tâches brunes
+	std::vector<std::string> spotSearchAlgorithms = { "Detection de contours (Canny)", "Detection de contours (SobelXY)", "Detection de contours (Laplacien)", "Masque a*", "SimpleBlobDetector"};
+
+	std::cout << "Selectionnez l'algorithme de recherche de taches : " << std::endl;
+	for(size_t i = 0; i < spotSearchAlgorithms.size(); i++)
+		std::cout << i << " - " << spotSearchAlgorithms.at(i) << std::endl;
+
+	int spotChoiceIndex = -1;
+	while(!(spotChoiceIndex >= 0 && spotChoiceIndex < static_cast<long long>(spotSearchAlgorithms.size())))
+		std::cin >> spotChoiceIndex;
+
+	cv::Mat result = ExtractSpots(src, leaf, { spotChoiceIndex, spotSearchAlgorithms.at(spotChoiceIndex) });
+
+	// Enregistrement des résultats
+	char answer{};
+	std::cout << "Souhaitez-vous enregistrer le resultat ? (o/n)" << std::endl;
+	std::cin >> answer;
+	
+	if(answer == 'o' || answer == 'O' || answer == 'y' || answer == 'Y')
+	{
+		std::string filePath;
+		std::cout << "Entrez le nom du fichier que vous souhaitez enregistrer : " << std::endl;
+		std::cin >> filePath;
+
+		std::string const finalPath = "Outputs/" + filePath + ".png";
+		std::cout << "Enregistrement des resultats dans : " << finalPath << std::endl;
+		cv::imwrite(finalPath, result);
+	}
 }
 
-void Program::HistogramStudy(cv::Mat const& image, std::pair<int, std::string> colorSpace)
+void Program::HistogramStudy(cv::Mat const& image, std::pair<int, std::string> const& colorSpace)
 {
 	cv::Mat copy = image.clone();
 	// Si l'espace de couleur sélectionné n'est pas BGR, on réalise une conversion d'espace
@@ -113,7 +141,7 @@ void Program::HistogramStudy(cv::Mat const& image, std::pair<int, std::string> c
 	cv::destroyAllWindows();
 }
 
-cv::Mat Program::ExtractLeaf(cv::Mat const& image, std::pair<int, std::string> algorithm)
+cv::Mat Program::ExtractLeaf(cv::Mat const& image, std::pair<int, std::string> const& algorithm)
 {
 	cv::Mat copy = image.clone();
 
@@ -152,6 +180,7 @@ cv::Mat Program::ExtractLeaf(cv::Mat const& image, std::pair<int, std::string> a
 			cv::threshold(edges, edges, 2, 255, cv::THRESH_BINARY);
 			}
 			break;
+		default: break;
 		}
 
 		cv::dilate(edges, edges, cv::Mat(), cv::Point(-1, -1), 3, 1, 1);
@@ -189,6 +218,191 @@ cv::Mat Program::ExtractLeaf(cv::Mat const& image, std::pair<int, std::string> a
 	return result;
 }
 
-cv::Mat Program::ExtractSpots(cv::Mat const& image, std::pair<int, std::string> algorithm)
+cv::Mat Program::ExtractSpots(cv::Mat const& image, cv::Mat const& leaf, std::pair<int, std::string> const& algorithm)
 {
+	cv::Mat result   = image.clone();
+	cv::Mat copyLeaf = leaf.clone();
+
+	if(algorithm.first < 3) // Détection de contour (Canny, SobelXY, Laplacien)
+	{
+		// Prétraitement : le fond noir devient blanc
+		for(int x = 0; x < copyLeaf.rows; x++)
+			for(int y = 0; y < copyLeaf.cols; y++)
+				if(copyLeaf.at<cv::Vec3b>(x, y) == cv::Vec3b{0, 0, 0})
+					copyLeaf.at<cv::Vec3b>(x, y) = cv::Vec3b{ 255, 255, 255 };
+
+		std::vector<cv::Mat> channels;
+		cv::split(copyLeaf, channels);
+
+		cv::Mat green;
+		cv::equalizeHist(channels[1], green);
+		cv::bitwise_not(green, green);
+
+		cv::threshold(green, green, 252, 255, cv::THRESH_BINARY);
+
+		cv::erode(green, green, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
+		cv::dilate(green, green, cv::Mat(), cv::Point(-1, -1), 5, 1, 1);
+
+		cv::Mat edges;
+		switch(algorithm.first)
+		{
+		case 0: // Canny
+		{
+			cv::Canny(green, edges, 144, 192);
+		}
+		break;
+		case 1: // SobelXY
+		{
+			cv::GaussianBlur(green, green, cv::Size(9, 9), 0);
+			cv::Sobel(green, edges, CV_8UC1, 1, 1, 5);
+			cv::threshold(edges, edges, 15, 255, cv::THRESH_BINARY);
+		}
+		break;
+		case 2: // Laplacian
+		{
+			cv::GaussianBlur(green, green, cv::Size(9, 9), 0);
+			cv::Laplacian(green, edges, CV_8UC1);
+			cv::threshold(edges, edges, 2, 255, cv::THRESH_BINARY);
+		}
+		break;
+		default: break;
+		}
+
+		cv::dilate(edges, edges, cv::Mat(), cv::Point(-1, -1), 3, 1, 1);
+
+		std::vector<std::vector<cv::Point>> contours;
+		cv::findContours(edges, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+		for(size_t i = 0; i < contours.size(); i++)
+		{
+			// Affichage des contours en bleu
+			cv::drawContours(result, contours, static_cast<int>(i), cv::Scalar(255, 0, 0));
+
+			// Affichage d'un rectangle avec rotation englobant le contour
+			cv::RotatedRect r = cv::minAreaRect(contours.at(i));
+			cv::Point2f pts[4];
+			r.points(pts);
+			for(int j = 0; j < 4; j++)
+				cv::line(result, pts[j], pts[(j + 1) % 4], cv::Scalar(0, 0, 255));
+
+			// Affichage boîte englobante
+			cv::Rect box = cv::boundingRect(contours[i]);
+			cv::rectangle(result, box, cv::Scalar(0, 255, 0));
+
+			std::cout << "\n----------------------------------"
+				<< "\nID zone : " << i + 1
+				<< "\nCoordonnees : ( X = " << box.x << " ; Y = " << box.y << " )"
+				<< "\nLargeur : " << box.width
+				<< "\nHauteur : " << box.height
+				<< "\n----------------------------------" << std::endl;
+		}
+	}
+	else if(algorithm.first == 3) // Masque à l'aide du channel a* (espace de couleur L*a*b*)
+	{
+		cv::Mat lab;
+		cv::cvtColor(copyLeaf, lab, cv::COLOR_BGR2Lab);
+
+		std::vector<cv::Mat> channels;
+		cv::split(lab, channels);
+
+		cv::Mat mask;
+		cv::threshold(channels[1], mask, 115, 255, cv::THRESH_BINARY);
+
+		cv::Mat cutout;
+		cv::bitwise_and(copyLeaf, copyLeaf, cutout, mask);
+
+		cv::erode(cutout, cutout, cv::Mat(), cv::Point(-1, -1), 5, 1, 1);
+		cv::dilate(cutout, cutout, cv::Mat(), cv::Point(-1, -1), 3, 1, 1);
+
+		cv::cvtColor(cutout, cutout, cv::COLOR_BGR2GRAY);
+		std::vector<std::vector<cv::Point>> contours;
+		cv::findContours(cutout, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+		for(size_t i = 0; i < contours.size(); i++)
+		{
+			// Affichage des contours en bleu
+			cv::drawContours(result, contours, static_cast<int>(i), cv::Scalar(255, 0, 0));
+
+			// Affichage d'un rectangle avec rotation englobant le contour
+			cv::RotatedRect r = cv::minAreaRect(contours.at(i));
+			cv::Point2f pts[4];
+			r.points(pts);
+			for(int j = 0; j < 4; j++)
+				cv::line(result, pts[j], pts[(j + 1) % 4], cv::Scalar(0, 0, 255));
+
+			// Affichage boîte englobante
+			cv::Rect box = cv::boundingRect(contours[i]);
+			cv::rectangle(result, box, cv::Scalar(0, 255, 0));
+
+			std::cout << "\n----------------------------------"
+				<< "\nID zone : " << i + 1
+				<< "\nCoordonnees : ( X = " << box.x << " ; Y = " << box.y << " )"
+				<< "\nLargeur : " << box.width
+				<< "\nHauteur : " << box.height
+				<< "\n----------------------------------" << std::endl;
+		}
+	}
+	else // SimpleBlobDetector
+	{
+		std::vector<cv::Mat> channels;
+		cv::split(copyLeaf, channels);
+
+		cv::Mat green = channels[1];
+
+		cv::SimpleBlobDetector::Params params;
+		// Thresholds
+		params.minThreshold = 80.f;
+		params.maxThreshold = 111.f;
+
+		// Filter by Area
+		params.filterByArea = true;
+		params.minArea = 1000.f;
+
+		// Filter by Circularity
+		params.filterByCircularity = true;
+		params.minCircularity = 0.1f;
+
+		// Filter by Convexity
+		params.filterByConvexity = true;
+		params.minConvexity = 0.5f;
+
+		// Filter by Inertia
+		params.filterByInertia = true;
+		params.minInertiaRatio = 0.01f;
+
+		// Filter by Color
+		params.filterByColor = false;
+		params.blobColor = 0;
+
+		cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);
+
+		std::vector<cv::KeyPoint> keyPoints;
+		detector->detect(green, keyPoints);
+
+		cv::drawKeypoints(result, keyPoints, result, cv::Scalar(0, 0, 255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+
+		/*
+		 * Affichage des coordonnées des blobs
+		 * Bien que ce ne soient pas des rectangles mais des cercles et que nous attendons surtout des rectangles englobant les tâches,
+		 * le résultat est néanmoins intéressant pour la reconnaissance des zones de pixels ayant des caractéristiques proches.
+		 */
+		for(size_t i = 0; i < keyPoints.size(); i++)
+		{
+			cv::KeyPoint const keyPoint = keyPoints.at(i);
+
+			std::cout << "\n----------------------------------"
+				<< "\nID zone : " << i + 1
+				<< "\nCoordonnees : ( X = " << keyPoint.pt.x << " ; Y = " << keyPoint.pt.y << " )"
+				<< "\nRayon zone : " << keyPoint.size / 2
+				<< "\n----------------------------------" << std::endl;
+		}
+	}
+
+	cv::imshow("Result - " + algorithm.second, result);
+
+	cv::waitKey();
+
+	cv::destroyAllWindows();
+
+	return result;
 }

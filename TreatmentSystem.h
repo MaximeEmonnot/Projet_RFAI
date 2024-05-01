@@ -41,9 +41,9 @@ namespace TreatmentSystem
         static void Run(std::string const& path);
 
     private:
-        static void    HistogramStudy(cv::Mat const& image, std::pair<int, std::string> colorSpace);
-        static cv::Mat ExtractLeaf(cv::Mat const& image, std::pair<int, std::string> algorithm);
-        static cv::Mat ExtractSpots(cv::Mat const& image, std::pair<int, std::string> algorithm);
+        static void    HistogramStudy(cv::Mat const& image, std::pair<int, std::string> const& colorSpace);
+        static cv::Mat ExtractLeaf(cv::Mat const& image, std::pair<int, std::string> const& algorithm);
+        static cv::Mat ExtractSpots(cv::Mat const& image, cv::Mat const& leaf, std::pair<int, std::string> const& algorithm);
     };
 }
 
