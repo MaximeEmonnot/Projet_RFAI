@@ -20,12 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\Main.cpp" />
-    <ClCompile Include="TreatmentSystem_Program.cpp" />
-    <ClCompile Include="TreatmentSystem_Test.cpp" />
+    <ClCompile Include="Sources\TreatmentSystem_Program.cpp" />
+    <ClCompile Include="Sources\TreatmentSystem_Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Includes\EngineException.h" />
-    <ClInclude Include="TreatmentSystem.h" />
+    <ClInclude Include="Includes\TreatmentSystem.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

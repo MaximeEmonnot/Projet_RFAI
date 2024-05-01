@@ -1,4 +1,4 @@
-#include "TreatmentSystem.h"
+#include <TreatmentSystem.h>
 
 #include <opencv2/opencv.hpp>
 
