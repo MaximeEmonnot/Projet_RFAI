@@ -28,7 +28,7 @@ int main()
 			std::cout << "Exécution des tests..." << std::endl;
 
 			// Exécution des tests de traitement
-			TreatmentSystem::RunTests(files.at(fileChoice).string());
+			TreatmentSystem::Program::Run(files.at(fileChoice).string());
 		}
 	}
 	catch(EngineException const& e)

@@ -2,20 +2,17 @@
 
 #include <opencv2/opencv.hpp>
 
+using namespace TreatmentSystem;
 
-
-void TreatmentSystem::RunTests(std::string const& path)
+void Test::RunTests(std::string const& path)
 {
 	TestGrabCut(path);
 }
 
 
-
-
-
 // ******************** TEST FUNCTIONS ************************ //
 
-void TreatmentSystem::TestHistogram(std::string const& path)
+void Test::TestHistogram(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 
@@ -59,7 +56,7 @@ void TreatmentSystem::TestHistogram(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestHistogramGrayscale(std::string const& path)
+void Test::TestHistogramGrayscale(std::string const& path)
 {
 	cv::Mat src = cv::imread(path, cv::IMREAD_GRAYSCALE);
 
@@ -87,7 +84,7 @@ void TreatmentSystem::TestHistogramGrayscale(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestHistogramHSV(std::string const& path)
+void Test::TestHistogramHSV(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 	cv::cvtColor(src, src, cv::COLOR_BGR2HSV);
@@ -135,7 +132,7 @@ void TreatmentSystem::TestHistogramHSV(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestHistogramLab(std::string const& path)
+void Test::TestHistogramLab(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 	cv::cvtColor(src, src, cv::COLOR_BGR2Lab);
@@ -183,7 +180,7 @@ void TreatmentSystem::TestHistogramLab(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestContour(std::string const& path)
+void Test::TestContour(std::string const& path)
 {
 	cv::Mat src = cv::imread(path, cv::IMREAD_GRAYSCALE);
 	cv::Mat edges;
@@ -202,7 +199,7 @@ void TreatmentSystem::TestContour(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestBlobDetection(std::string const& path)
+void Test::TestBlobDetection(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 
@@ -250,7 +247,7 @@ void TreatmentSystem::TestBlobDetection(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestEdgeDetection(std::string const& path)
+void Test::TestEdgeDetection(std::string const& path)
 {
 	cv::Mat img = cv::imread(path);
 
@@ -277,7 +274,7 @@ void TreatmentSystem::TestEdgeDetection(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestThresholding(std::string const& path)
+void Test::TestThresholding(std::string const& path)
 {
     cv::Mat src = cv::imread(path);
 
@@ -295,7 +292,7 @@ void TreatmentSystem::TestThresholding(std::string const& path)
     cv::waitKey();
 }
 
-void TreatmentSystem::TestColorspaces(std::string const& path)
+void Test::TestColorspaces(std::string const& path)
 {
     cv::Mat src = cv::imread(path);
 
@@ -325,7 +322,7 @@ void TreatmentSystem::TestColorspaces(std::string const& path)
     cv::waitKey();
 }
 
-void TreatmentSystem::TestMedianBlur(std::string const& path)
+void Test::TestMedianBlur(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 
@@ -338,7 +335,7 @@ void TreatmentSystem::TestMedianBlur(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestORB(std::string const& path)
+void Test::TestORB(std::string const& path)
 {
 	cv::Mat image = cv::imread(path);
 
@@ -381,7 +378,7 @@ void TreatmentSystem::TestORB(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestSegmentation(std::string const& path)
+void Test::TestSegmentation(std::string const& path)
 {
 	cv::Mat img = cv::imread(path);
 
@@ -424,7 +421,7 @@ void TreatmentSystem::TestSegmentation(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestHSVSaturationIdea(std::string const& path)
+void Test::TestHSVSaturationIdea(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 	cv::Mat hsv;
@@ -484,7 +481,7 @@ void TreatmentSystem::TestHSVSaturationIdea(std::string const& path)
 
 }
 
-void TreatmentSystem::TestLabDarkenIdea(std::string const& path)
+void Test::TestLabDarkenIdea(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 	cv::Mat lab;
@@ -544,7 +541,7 @@ void TreatmentSystem::TestLabDarkenIdea(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestContourDetection(std::string const& path)
+void Test::TestContourDetection(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 
@@ -583,7 +580,7 @@ void TreatmentSystem::TestContourDetection(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestBackgroundSubtractor(std::string const& path)
+void Test::TestBackgroundSubtractor(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 
@@ -598,7 +595,7 @@ void TreatmentSystem::TestBackgroundSubtractor(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestHistogramEqualization(std::string const& path)
+void Test::TestHistogramEqualization(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 
@@ -741,7 +738,7 @@ void TreatmentSystem::TestHistogramEqualization(std::string const& path)
 	cv::destroyAllWindows();
 }
 
-void TreatmentSystem::TestLeafCanny(std::string const& path)
+void Test::TestLeafCanny(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 
@@ -783,7 +780,7 @@ void TreatmentSystem::TestLeafCanny(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestLeafSobel(std::string const& path)
+void Test::TestLeafSobel(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 
@@ -827,7 +824,7 @@ void TreatmentSystem::TestLeafSobel(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestLeafLaplacian(std::string const& path)
+void Test::TestLeafLaplacian(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 
@@ -873,7 +870,7 @@ void TreatmentSystem::TestLeafLaplacian(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestGrabCut(std::string const& path)
+void Test::TestGrabCut(std::string const& path)
 {
 	cv::Mat src     = cv::imread(path);
 
@@ -956,18 +953,26 @@ void TreatmentSystem::TestGrabCut(std::string const& path)
 	for(int i = 0; i < contours.size(); i++)
 	{
 		// Affichage des contours en bleu
-			cv::drawContours(foreground, contours, i, cv::Scalar(255, 0, 0));
+			cv::drawContours(src, contours, i, cv::Scalar(255, 0, 0));
 
 		// Affichage d'un rectangle avec rotation englobant le contour
 			cv::RotatedRect r = cv::minAreaRect(contours[i]);
 		cv::Point2f pts[4];
 		r.points(pts);
 		for(int j = 0; j < 4; j++)
-			cv::line(foreground, pts[j], pts[(j + 1) % 4], cv::Scalar(0, 0, 255));
+			cv::line(src, pts[j], pts[(j + 1) % 4], cv::Scalar(0, 0, 255));
 
 		// Affichage boîte englobante
-			cv::Rect box = cv::boundingRect(contours[i]);
-		cv::rectangle(foreground, box, cv::Scalar(0, 255, 0));
+		cv::Rect box = cv::boundingRect(contours[i]);
+		cv::rectangle(src, box, cv::Scalar(0, 255, 0));
+
+		std::cout << "\n----------------------------------"
+		          << "\nChemin image : " << path
+		          << "\nID zone : " << i + 1
+		          << "\nCoordonnees : ( X = " << box.x << " ; Y = " << box.y << " )"
+		          << "\nLargeur : " << box.width
+		          << "\nHauteur : " << box.height
+		          << "\n----------------------------------" << std::endl;
 	}
 
 	/*cv::Mat hsv;
@@ -1045,12 +1050,12 @@ void TreatmentSystem::TestGrabCut(std::string const& path)
 	//cv::imshow("GrabCut Edges", edges);
 	//cv::imshow("GrabCut Edges", edges);
 
-	cv::imwrite("Outputs/AStarTâches.png", foreground);
+	cv::imwrite("Outputs/AStarTâches.png", src);
 
 	cv::waitKey();
 }
 
-void TreatmentSystem::TestNegative(std::string const& path)
+void Test::TestNegative(std::string const& path)
 {
 	cv::Mat src = cv::imread(path);
 
@@ -1071,7 +1076,7 @@ void TreatmentSystem::TestNegative(std::string const& path)
 	cv::waitKey();
 }
 
-void TreatmentSystem::DisplayColorspaces(std::string const& path)
+void Test::DisplayColorspaces(std::string const& path)
 {
 	cv::Mat bgr = cv::imread(path);
 

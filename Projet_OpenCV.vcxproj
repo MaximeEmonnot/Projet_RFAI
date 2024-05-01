@@ -20,7 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\Main.cpp" />
-    <ClCompile Include="TreatmentSystem.cpp" />
+    <ClCompile Include="TreatmentSystem_Program.cpp" />
+    <ClCompile Include="TreatmentSystem_Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Includes\EngineException.h" />
